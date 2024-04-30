@@ -1,6 +1,6 @@
 
 // ************************************************************************** //
-//	UTILS
+//	INSERTION UTILS
 // ************************************************************************** //
 
 int getMultipleOfTwo(bool refresh)
@@ -17,22 +17,22 @@ int getMultipleOfTwo(bool refresh)
 int getDuoJacobsthalNbr(bool refresh)
 {
 	static int js = 1;
-	static int js_last = 3;
+	static int jsLast = 3;
 	
 	if (refresh)
 	{
 		js = 1;
-		js_last = 3;
+		jsLast = 3;
 	}
-	int	to_return = js_last - js;
+	int	to_return = jsLast - js;
 	int	tmp = js;
-	js = js_last;
-	js_last = to_return + 2 * tmp;
+	js = jsLast;
+	jsLast = to_return + 2 * tmp;
 	return (to_return);		
 }
 
-template <typename v_d>
-void	updateIndex(size_t min, size_t max, v_d& vect, int range)
+template <typename T>
+void	updateIndex(size_t min, size_t max, T& vect, int range)
 {
 	size_t	size = vect.size();
 
@@ -45,11 +45,15 @@ void	updateIndex(size_t min, size_t max, v_d& vect, int range)
 	}
 }
 
-template <typename v_d>
-size_t	whereInsert(v_d v, std::vector<size_t>& sortedIndexes, int nbrToInsert, int indexMax)
+// ************************************************************************** //
+//	INSERTION PART
+// ************************************************************************** //
+
+template <typename T>
+size_t	whereInsert(T v, std::vector<size_t>& sortedIndexes, int nbrToInsert, int indexMax)
 {
 	int	indexMin = 0;
-	int index_mid;
+	int indexMid;
 
 	if (indexMax + 1 > static_cast<int>(sortedIndexes.size()))
 		indexMax = sortedIndexes.size() - 1;
@@ -57,28 +61,28 @@ size_t	whereInsert(v_d v, std::vector<size_t>& sortedIndexes, int nbrToInsert, i
 
 	while (indexMin + 1 != indexMax)
 	{
-		index_mid = indexMin + (indexMax - indexMin) / 2;
-		if (v[sortedIndexes[index_mid]] < to_insert)
-			indexMin = index_mid;
+		indexMid = indexMin + (indexMax - indexMin) / 2;
+		if (v[sortedIndexes[indexMid]] < nbrToInsert)
+			indexMin = indexMid;
 		else
-			indexMax = index_mid;
+			indexMax = indexMid;
 	}
-	if (v[sortedIndexes[indexMin]] > to_insert)
+	if (v[sortedIndexes[indexMin]] > nbrToInsert)
 		return (sortedIndexes[indexMin]);
-	if (v[sortedIndexes[indexMax]] < to_insert)
+	if (v[sortedIndexes[indexMax]] < nbrToInsert)
 		return (sortedIndexes[indexMax] + sortedIndexes[0] + 1);
 	if (sortedIndexes[indexMax] - sortedIndexes[indexMin] == sortedIndexes[0] + 1)
 		return (sortedIndexes[indexMax]);
 	return (sortedIndexes[indexMax] - sortedIndexes[0] - 1);
 }
 
-template <typename v_d>
-void	insertion(v_d& nbrs, size_t range) {
-	
+template <typename T>
+void	insertion(T& nbrs, size_t range) {
+
 	std::vector<size_t> sortedIndexes;
 	std::vector<size_t> unsortedIndexes;
-
 	size_t	size = nbrs.size();
+
 	for (size_t i = range - 1; i < size; i += range)
 	{
 		if (i < 2 * range || i / range % 2)
@@ -87,25 +91,25 @@ void	insertion(v_d& nbrs, size_t range) {
 			unsortedIndexes.push_back(i);
 	}
 
-	int	duoJacobsthalNbr = getDuoJacobsthalNbr(true);
-	int	indexMax = getMultipleOfTwo(true) - 1;
+	int		duoJacobsthalNbr = getDuoJacobsthalNbr(true);
+	int		indexMax = getMultipleOfTwo(true) - 1;
+	size_t	whereInsertMe, whereImFrom;
+
 	while (unsortedIndexes.empty() == false)
 	{
 		for (int ind = std::min(duoJacobsthalNbr, static_cast<int>(unsortedIndexes.size())) - 1; ind > -1; --ind)
 		{
-			size_t	whereInsert = where_i_have_to_go(nbrs, sortedIndexes, nbrs[unsortedIndexes[ind]], indexMax);
-			size_t	whereImFrom = unsortedIndexes[ind];
-
+			whereInsertMe = whereInsert(nbrs, sortedIndexes, nbrs[unsortedIndexes[ind]], indexMax);
+			whereImFrom = unsortedIndexes[ind];
 			for (size_t j = 0; j < range; j++)
 			{
-				nbrs.insert(nbrs.begin() + whereInsert - range + 1, nbrs[whereImFrom]);
+				nbrs.insert(nbrs.begin() + whereInsertMe - range + 1, nbrs[whereImFrom]);
 				nbrs.erase(nbrs.begin() + whereImFrom + 1);
 			}
-
 			unsortedIndexes.erase(unsortedIndexes.begin() + ind);
-			upgrade_ind(whereInsert, whereImFrom, sortedIndexes, range);
-			upgrade_ind(whereInsert, whereImFrom, unsortedIndexes, range);
-			sortedIndexes.insert(std::lower_bound(sortedIndexes.begin(), sortedIndexes.end(), whereInsert), whereInsert);
+			upgrade_ind(whereInsertMe, whereImFrom, sortedIndexes, range);
+			upgrade_ind(whereInsertMe, whereImFrom, unsortedIndexes, range);
+			sortedIndexes.insert(std::lower_bound(sortedIndexes.begin(), sortedIndexes.end(), whereInsertMe), whereInsertMe);
 		}
 		duoJacobsthalNbr = getDuoJacobsthalNbr(false);
 		indexMax = getMultipleOfTwo(false) - 1;
@@ -113,24 +117,24 @@ void	insertion(v_d& nbrs, size_t range) {
 }
 
 // ************************************************************************** //
-//	MERGE
+//	MERGE PART
 // ************************************************************************** //
 
-void	mergeInsertion(std::vector<int>& nbrs, int range)
+template <typename T>
+void	mergeInsertion(T& nbrs, int range)
 {
-    std::vector<int>::iterator left = nbrs.begin() + size - 1;
-    std::vector<int>::iterator right = nbrs.begin() + 2 * size - 1;
+    T::iterator left = nbrs.begin() + range - 1;
+    T::iterator right = nbrs.begin() + 2 * range - 1;
 
-    int nbIteration = nbrs.size() / size / 2;
+    int nbIteration = nbrs.size() / range / 2;
 
     if (nbIteration == 0)
         return ;
-    for (int it = 0; it < nbIteration; it++, left += size * 2, right += size * 2)
+    for (int it = 0; it < nbIteration; it++, left += range * 2, right += range * 2)
     {
         if (*left > *right)
-            swapPair(left, size);
+            swapPair(left, range);
     }
 	mergeInsertion(nbrs, range * 2);
-	insertion(nbrs, size);
+	insertion(nbrs, range);
 }
-
