@@ -1,8 +1,18 @@
 
+#include "PmergeMe.hpp"
+
 static bool parseInt(const std::string& s, int& out) {
 	std::istringstream iss(s);
 	iss >> out;
 	return iss.eof() && !iss.fail();
+}
+
+template <typename T>
+void    putContainer(T& nbrs)
+{
+    for (typename T::iterator it = nbrs.begin(); it != nbrs.end(); ++it)
+        std::cout << *it << " ";
+    std::cout << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -20,11 +30,15 @@ int main(int argc, char **argv)
 		}
 		vec.push_back(n);
 	}
+	// std::deque<int>	dec(vec.begin(), vec.end());
+
 	std::cout << "Before: ";
-	putVector(vec);
-	fordJohnsonVector(vec);
-	std::deque<int>	dec(vec.begin(), vec.end());
-	fordJohnsonDeque(dec);
+	putContainer(vec);
+	mergeInsertion(vec, 1);
+	std::cout << "After: ";
+	putContainer(vec);
+
+	// mergeInsertion(dec, 1);
 	
 	return (0);
 }

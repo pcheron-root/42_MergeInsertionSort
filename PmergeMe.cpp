@@ -1,4 +1,6 @@
 
+#include "PmergeMe.hpp"
+
 // ************************************************************************** //
 //	INSERTION UTILS
 // ************************************************************************** //
@@ -107,8 +109,8 @@ void	insertion(T& nbrs, size_t range) {
 				nbrs.erase(nbrs.begin() + whereImFrom + 1);
 			}
 			unsortedIndexes.erase(unsortedIndexes.begin() + ind);
-			upgrade_ind(whereInsertMe, whereImFrom, sortedIndexes, range);
-			upgrade_ind(whereInsertMe, whereImFrom, unsortedIndexes, range);
+			updateIndex(whereInsertMe, whereImFrom, sortedIndexes, range);
+			updateIndex(whereInsertMe, whereImFrom, unsortedIndexes, range);
 			sortedIndexes.insert(std::lower_bound(sortedIndexes.begin(), sortedIndexes.end(), whereInsertMe), whereInsertMe);
 		}
 		duoJacobsthalNbr = getDuoJacobsthalNbr(false);
@@ -120,11 +122,34 @@ void	insertion(T& nbrs, size_t range) {
 //	MERGE PART
 // ************************************************************************** //
 
+void    swapNbr(std::vector<int>::iterator& x, std::vector<int>::iterator& y)
+{
+    int tmp;
+
+    tmp = *y;
+    *y = *x;
+    *x = tmp;
+}
+
+template <typename T>
+void    swapPair(typename T::iterator left, int range)
+{
+    typename T::iterator right = left + range;
+
+    while (range)
+    {
+        swapNbr(left, right);
+        --left;
+        --right;
+        --range;
+    }
+}
+
 template <typename T>
 void	mergeInsertion(T& nbrs, int range)
 {
-    T::iterator left = nbrs.begin() + range - 1;
-    T::iterator right = nbrs.begin() + 2 * range - 1;
+    typename T::iterator left = nbrs.begin() + range - 1;
+    typename T::iterator right = nbrs.begin() + 2 * range - 1;
 
     int nbIteration = nbrs.size() / range / 2;
 
